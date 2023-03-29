@@ -1,0 +1,6 @@
+spring.jpa.properties.hibernate.jjdbc.lob.non_contextual_creation=true
+spring.jpa.hibernate.ddl-auto=update
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/LabShoppingList
+spring.datasource.username=postgres
+spring.datasource.password=123abc

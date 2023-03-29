@@ -1,0 +1,126 @@
+package LabShoppingList.Api.models;
+
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.TypedQuery;
+
+@Entity
+@Table(name="TB_CATEGORIA")
+
+public class Categoria {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(name = "nome", nullable = false, unique = true)
+    private String nome;
+    
+    @Column(name = "descricao")
+    private String descricao;
+    
+    @OneToMany(mappedBy = "categoria")
+    private List<Produto> produtos;
+    
+    // Construtor vazio
+    public Categoria() {}
+    
+    // Construtor com nome e descricao
+    public Categoria(String nome, String descricao) {
+        this.nome = nome;
+        this.descricao = descricao;
+    }
+    
+    // getters e setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+    
+    public List<Produto> getProdutos() {
+        return produtos;
+    }
+    
+    // Métodos de validação
+    public boolean validarNome() {
+        return nome != null && !nome.trim().isEmpty();
+    }
+    
+    // Métodos de CRUD
+    public void salvar(EntityManager em) {
+        if (!validarNome()) {
+            throw new RuntimeException("Nome inválido");
+        }
+        Categoria categoriaExistente = em.find(Categoria.class, nome);
+        if (categoriaExistente != null) {
+            throw new RuntimeException("Categoria já existe");
+        }
+        em.persist(this);
+    }
+    
+    public static List<Categoria> listar(EntityManager em) {
+        String jpql = "SELECT c FROM Categoria c";
+        TypedQuery<Categoria> query = em.createQuery(jpql, Categoria.class);
+        return query.getResultList();
+    }
+    
+    public static Categoria buscarPorNome(EntityManager em, String nome) {
+        return em.find(Categoria.class, nome);
+    }
+    
+    public void atualizar(EntityManager em, String novoNome, String novaDescricao) {
+        if (!validarNome()) {
+            throw new RuntimeException("Nome inválido");
+        }
+        Categoria categoriaExistente = em.find(Categoria.class, nome);
+        if (categoriaExistente != null && !categoriaExistente.getId().equals(id)) {
+            throw new RuntimeException("Categoria já existe");
+        }
+        nome = novoNome;
+        descricao = novaDescricao;
+        em.merge(this);
+    }
+    
+    public static void excluir(EntityManager em, String nome) {
+        Categoria categoria = em.find(Categoria.class, nome);
+        if (categoria == null) {
+            throw new RuntimeException("Categoria não encontrada");
+        }
+        if (!categoria.getProdutos().isEmpty()) {
+            throw new RuntimeException("Categoria em uso, não pode ser excluída");
+        }
+        em.remove(categoria);
+    }
+
+	public void addProduto(Produto produto) {
+		// TODO Auto-generated method stub
+		
+	}
+}
